@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { TabBar } from './components/TabBar';
 import { TaskList } from './components/TaskList';
+import { SideBar } from './components/SideBar';
 import { AppState, Tab, Task } from './types';
 import { loadState, saveState } from './store/localStorage';
 import { ThemeProvider } from './components/theme-provider';
@@ -167,31 +168,67 @@ function App() {
     }));
   };
 
+  const handleTabsReorder = (newTabs: Tab[]) => {
+    setState((prev) => ({
+      ...prev,
+      tabs: newTabs.map((tab, index) => ({
+        ...tab,
+        order: index,
+        updatedAt: new Date().toISOString(),
+      })),
+    }));
+  };
+
+  const handleTasksReorder = (newTasks: Task[]) => {
+    if (!state.activeTab) return;
+
+    setState((prev) => ({
+      ...prev,
+      tasks: {
+        ...prev.tasks,
+        [prev.activeTab!]: newTasks.map((task) => ({
+          ...task,
+          updatedAt: new Date().toISOString(),
+        })),
+      },
+    }));
+  };
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
         <div className="fixed top-0 right-4 z-50 mt-2">
           <ThemeToggle />
         </div>
-        <div className="mt-4">
-          <TabBar
+        <div className="flex h-screen pt-4">
+          <SideBar
             tabs={state.tabs}
             activeTab={state.activeTab}
             onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
-            onTabAdd={handleTabAdd}
-            onTabRemove={handleTabRemove}
-            onTabTitleChange={handleTabTitleChange}
+            onTabsReorder={handleTabsReorder}
           />
-          {state.activeTab && (
-            <TaskList
-              tasks={state.tasks[state.activeTab]}
-              onTaskAdd={handleTaskAdd}
-              onTaskToggle={handleTaskToggle}
-              onTaskRemove={handleTaskRemove}
-              onTaskEdit={handleTaskEdit}
-              onUncompleteAll={handleUncompleteAll}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TabBar
+              tabs={state.tabs}
+              activeTab={state.activeTab}
+              onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
+              onTabAdd={handleTabAdd}
+              onTabRemove={handleTabRemove}
+              onTabTitleChange={handleTabTitleChange}
+              onTabsReorder={handleTabsReorder}
             />
-          )}
+            {state.activeTab && (
+              <TaskList
+                tasks={state.tasks[state.activeTab]}
+                onTaskAdd={handleTaskAdd}
+                onTaskToggle={handleTaskToggle}
+                onTaskRemove={handleTaskRemove}
+                onTaskEdit={handleTaskEdit}
+                onUncompleteAll={handleUncompleteAll}
+                onTasksReorder={handleTasksReorder}
+              />
+            )}
+          </div>
         </div>
       </div>
     </ThemeProvider>

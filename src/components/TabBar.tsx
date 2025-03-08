@@ -1,9 +1,26 @@
 import React, { useState, useRef } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, GripHorizontal } from 'lucide-react';
 import { Tab } from '../types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +40,100 @@ interface TabBarProps {
   onTabAdd: () => void;
   onTabRemove: (tabId: string) => void;
   onTabTitleChange: (tabId: string, newTitle: string) => void;
+  onTabsReorder: (tabs: Tab[]) => void;
 }
+
+interface SortableTabProps {
+  tab: Tab;
+  isActive: boolean;
+  onSelect: () => void;
+  onDoubleClick: () => void;
+  onDelete: (e: React.MouseEvent) => void;
+  isEditing: boolean;
+  editingTitle: string;
+  onEditChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onEditSubmit: () => void;
+  onEditCancel: () => void;
+}
+
+const SortableTab: React.FC<SortableTabProps> = ({
+  tab,
+  isActive,
+  onSelect,
+  onDoubleClick,
+  onDelete,
+  isEditing,
+  editingTitle,
+  onEditChange,
+  onEditSubmit,
+  onEditCancel,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 1 : 0,
+  };
+
+  return (
+    <TabsTrigger
+      ref={setNodeRef}
+      style={style}
+      value={tab.id}
+      onClick={onSelect}
+      onDoubleClick={onDoubleClick}
+      className={cn(
+        "relative data-[state=active]:bg-background px-4 py-2 h-10",
+        isDragging && "opacity-50"
+      )}
+    >
+      {isEditing ? (
+        <Input
+          type="text"
+          value={editingTitle}
+          onChange={onEditChange}
+          onBlur={onEditSubmit}
+          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter') onEditSubmit();
+            if (e.key === 'Escape') onEditCancel();
+          }}
+          className="w-[120px] h-6 px-1"
+          autoFocus
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      ) : (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 p-0 cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripHorizontal className="h-4 w-4" />
+          </Button>
+          <span className="truncate">{tab.title}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
+            onClick={onDelete}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </TabsTrigger>
+  );
+};
 
 export const TabBar: React.FC<TabBarProps> = ({
   tabs,
@@ -32,6 +142,7 @@ export const TabBar: React.FC<TabBarProps> = ({
   onTabAdd,
   onTabRemove,
   onTabTitleChange,
+  onTabsReorder,
 }) => {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
@@ -39,6 +150,25 @@ export const TabBar: React.FC<TabBarProps> = ({
   const [showLeftScroll, setShowLeftScroll] = useState(false);
   const [showRightScroll, setShowRightScroll] = useState(false);
   const tabsListRef = useRef<HTMLDivElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = tabs.findIndex((tab) => tab.id === active.id);
+      const newIndex = tabs.findIndex((tab) => tab.id === over.id);
+      
+      const newTabs = arrayMove(tabs, oldIndex, newIndex);
+      onTabsReorder(newTabs);
+    }
+  };
 
   const handleDoubleClick = (tab: Tab) => {
     setEditingTabId(tab.id);
@@ -112,44 +242,33 @@ export const TabBar: React.FC<TabBarProps> = ({
                 className="overflow-x-auto scrollbar-hide"
                 onScroll={checkScroll}
               >
-                <TabsList className="h-auto p-0 bg-transparent w-max min-w-full justify-start">
-                  {tabs.map((tab) => (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      onClick={() => onTabSelect(tab.id)}
-                      onDoubleClick={() => handleDoubleClick(tab)}
-                      className="relative data-[state=active]:bg-background px-4 py-2 h-10"
+                <TabsList className="inline-flex border-b-0">
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={tabs.map(tab => tab.id)}
+                      strategy={horizontalListSortingStrategy}
                     >
-                      {editingTabId === tab.id ? (
-                        <Input
-                          type="text"
-                          value={editingTitle}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingTitle(e.target.value)}
-                          onBlur={() => handleTitleSubmit(tab.id)}
-                          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                            if (e.key === 'Enter') handleTitleSubmit(tab.id);
-                            if (e.key === 'Escape') setEditingTabId(null);
-                          }}
-                          className="w-[120px] h-6 px-1"
-                          autoFocus
-                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                      {tabs.map((tab) => (
+                        <SortableTab
+                          key={tab.id}
+                          tab={tab}
+                          isActive={tab.id === activeTab}
+                          onSelect={() => onTabSelect(tab.id)}
+                          onDoubleClick={() => handleDoubleClick(tab)}
+                          onDelete={(e) => handleDeleteClick(tab.id, e)}
+                          isEditing={editingTabId === tab.id}
+                          editingTitle={editingTitle}
+                          onEditChange={(e) => setEditingTitle(e.target.value)}
+                          onEditSubmit={() => handleTitleSubmit(tab.id)}
+                          onEditCancel={() => setEditingTabId(null)}
                         />
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="truncate">{tab.title}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
-                            onClick={(e) => handleDeleteClick(tab.id, e)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TabsTrigger>
-                  ))}
+                      ))}
+                    </SortableContext>
+                  </DndContext>
                   <Button
                     variant="ghost"
                     size="icon"
