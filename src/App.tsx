@@ -4,6 +4,8 @@ import { TabBar } from './components/TabBar';
 import { TaskList } from './components/TaskList';
 import { AppState, Tab, Task } from './types';
 import { loadState, saveState } from './store/localStorage';
+import { ThemeProvider } from './components/theme-provider';
+import { ThemeToggle } from './components/theme-toggle';
 
 function App() {
   const [state, setState] = useState<AppState>(() => {
@@ -146,34 +148,32 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center">
-          <h1 className="text-xl font-semibold">
-            タスク管理アプリ
-          </h1>
+    <ThemeProvider>
+      <div className="min-h-screen bg-background">
+        <div className="fixed top-0 right-4 z-50 mt-2">
+          <ThemeToggle />
         </div>
-      </header>
-
-      <TabBar
-        tabs={state.tabs}
-        activeTab={state.activeTab}
-        onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
-        onTabAdd={handleTabAdd}
-        onTabRemove={handleTabRemove}
-        onTabTitleChange={handleTabTitleChange}
-      />
-
-      {state.activeTab && (
-        <TaskList
-          tasks={state.tasks[state.activeTab]}
-          onTaskAdd={handleTaskAdd}
-          onTaskToggle={handleTaskToggle}
-          onTaskRemove={handleTaskRemove}
-          onTaskEdit={handleTaskEdit}
-        />
-      )}
-    </div>
+        <div className="mt-4">
+          <TabBar
+            tabs={state.tabs}
+            activeTab={state.activeTab}
+            onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
+            onTabAdd={handleTabAdd}
+            onTabRemove={handleTabRemove}
+            onTabTitleChange={handleTabTitleChange}
+          />
+          {state.activeTab && (
+            <TaskList
+              tasks={state.tasks[state.activeTab]}
+              onTaskAdd={handleTaskAdd}
+              onTaskToggle={handleTaskToggle}
+              onTaskRemove={handleTaskRemove}
+              onTaskEdit={handleTaskEdit}
+            />
+          )}
+        </div>
+      </div>
+    </ThemeProvider>
   );
 }
 
