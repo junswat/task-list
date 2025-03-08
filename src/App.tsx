@@ -147,6 +147,26 @@ function App() {
     }));
   };
 
+  const handleUncompleteAll = () => {
+    if (!state.activeTab) return;
+
+    setState((prev) => ({
+      ...prev,
+      tasks: {
+        ...prev.tasks,
+        [prev.activeTab!]: prev.tasks[prev.activeTab!].map((task) =>
+          task.completed
+            ? {
+                ...task,
+                completed: false,
+                updatedAt: new Date().toISOString(),
+              }
+            : task
+        ),
+      },
+    }));
+  };
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
@@ -169,6 +189,7 @@ function App() {
               onTaskToggle={handleTaskToggle}
               onTaskRemove={handleTaskRemove}
               onTaskEdit={handleTaskEdit}
+              onUncompleteAll={handleUncompleteAll}
             />
           )}
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Plus, X } from 'lucide-react';
+import { Check, Plus, X, RotateCcw } from 'lucide-react';
 import { Task } from '../types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ interface TaskListProps {
   onTaskToggle: (taskId: string) => void;
   onTaskRemove: (taskId: string) => void;
   onTaskEdit: (taskId: string, newText: string) => void;
+  onUncompleteAll: () => void;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
@@ -20,6 +21,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   onTaskToggle,
   onTaskRemove,
   onTaskEdit,
+  onUncompleteAll,
 }) => {
   const [newTaskText, setNewTaskText] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -70,7 +72,18 @@ export const TaskList: React.FC<TaskListProps> = ({
       {completedTasks.length > 0 && (
         <>
           <div className="my-6 border-t" />
-          <h3 className="text-sm text-muted-foreground mb-4">完了したタスク</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm text-muted-foreground">完了したタスク</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onUncompleteAll}
+              className="h-8"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              すべて未完了に戻す
+            </Button>
+          </div>
           <div className="space-y-2">
             {completedTasks.map((task) => (
               <TaskItem
