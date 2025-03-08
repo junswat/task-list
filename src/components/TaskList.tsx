@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Check, Plus, X } from 'lucide-react';
 import { Task } from '../types';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface TaskListProps {
   tasks: Task[];
@@ -40,7 +44,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   const completedTasks = tasks.filter(task => task.completed);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex-1 overflow-y-auto p-4 container mx-auto">
       {/* Incomplete Tasks */}
       <div className="space-y-2">
         {incompleteTasks.map((task) => (
@@ -65,8 +69,8 @@ export const TaskList: React.FC<TaskListProps> = ({
       {/* Completed Tasks */}
       {completedTasks.length > 0 && (
         <>
-          <div className="my-6 border-t border-gray-200" />
-          <h3 className="text-sm text-gray-500 mb-4">完了したタスク</h3>
+          <div className="my-6 border-t" />
+          <h3 className="text-sm text-muted-foreground mb-4">完了したタスク</h3>
           <div className="space-y-2">
             {completedTasks.map((task) => (
               <TaskItem
@@ -91,16 +95,16 @@ export const TaskList: React.FC<TaskListProps> = ({
 
       {/* Add New Task */}
       <form onSubmit={handleTaskSubmit} className="mt-6">
-        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-          <Plus size={20} className="text-gray-400" />
-          <input
+        <Card className="flex items-center gap-2 p-2">
+          <Plus className="h-4 w-4 text-muted-foreground" />
+          <Input
             type="text"
             value={newTaskText}
-            onChange={(e) => setNewTaskText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTaskText(e.target.value)}
             placeholder="新しいタスクを追加..."
-            className="flex-1 bg-transparent outline-none"
+            className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
-        </div>
+        </Card>
       </form>
     </div>
   );
@@ -130,52 +134,44 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onEditCancel,
 }) => {
   return (
-    <div
-      className={`flex items-center gap-3 p-3 rounded-lg group ${
-        task.completed ? 'bg-gray-50' : 'bg-white border border-gray-200'
-      }`}
-    >
-      <button
-        onClick={onToggle}
-        className={`w-5 h-5 rounded-full border ${
-          task.completed
-            ? 'bg-blue-500 border-blue-500'
-            : 'border-gray-300 hover:border-blue-500'
-        } flex items-center justify-center`}
-      >
-        {task.completed && <Check size={12} className="text-white" />}
-      </button>
+    <Card className={`flex items-center gap-3 p-3 group ${task.completed ? 'bg-muted/50' : ''}`}>
+      <Checkbox
+        checked={task.completed}
+        onCheckedChange={onToggle}
+      />
       
       {isEditing ? (
-        <input
+        <Input
           type="text"
           value={editingText}
-          onChange={(e) => onEditChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEditChange(e.target.value)}
           onBlur={onEditSubmit}
-          onKeyDown={(e) => {
+          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'Enter') onEditSubmit();
             if (e.key === 'Escape') onEditCancel();
           }}
-          className="flex-1 bg-transparent outline-none"
+          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           autoFocus
         />
       ) : (
         <span
           onDoubleClick={onEdit}
           className={`flex-1 ${
-            task.completed ? 'text-gray-400 line-through' : 'text-gray-700'
+            task.completed ? 'text-muted-foreground line-through' : ''
           }`}
         >
           {task.text}
         </span>
       )}
 
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={onRemove}
-        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded"
+        className="opacity-0 group-hover:opacity-100 h-8 w-8"
       >
-        <X size={14} className="text-gray-400" />
-      </button>
-    </div>
+        <X className="h-4 w-4" />
+      </Button>
+    </Card>
   );
 };

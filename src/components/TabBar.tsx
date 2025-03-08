@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Tab } from '../types';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TabBarProps {
   tabs: Tab[];
@@ -35,54 +38,61 @@ export const TabBar: React.FC<TabBarProps> = ({
   };
 
   return (
-    <div className="flex items-center bg-gray-100 border-b border-gray-200 overflow-x-auto">
-      {tabs.map((tab) => (
-        <div
-          key={tab.id}
-          className={`flex items-center min-w-[120px] max-w-[200px] h-10 px-4 border-r border-gray-200 cursor-pointer group ${
-            tab.id === activeTab
-              ? 'bg-white border-b-2 border-b-blue-500'
-              : 'bg-gray-50 hover:bg-gray-100'
-          }`}
-          onClick={() => onTabSelect(tab.id)}
-          onDoubleClick={() => handleDoubleClick(tab)}
-        >
-          {editingTabId === tab.id ? (
-            <input
-              type="text"
-              value={editingTitle}
-              onChange={(e) => setEditingTitle(e.target.value)}
-              onBlur={() => handleTitleSubmit(tab.id)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleSubmit(tab.id);
-                if (e.key === 'Escape') setEditingTabId(null);
-              }}
-              className="w-full bg-white px-1 outline-none"
-              autoFocus
-            />
-          ) : (
-            <>
-              <span className="flex-1 truncate">{tab.title}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTabRemove(tab.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 ml-2 p-1 hover:bg-gray-200 rounded"
+    <div className="border-b bg-muted/40">
+      <div className="container mx-auto px-4 flex items-center">
+        <Tabs value={activeTab || undefined} className="flex-1">
+          <TabsList className="h-auto p-0 bg-transparent">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                onClick={() => onTabSelect(tab.id)}
+                onDoubleClick={() => handleDoubleClick(tab)}
+                className="relative data-[state=active]:bg-background px-4 py-2 h-10"
               >
-                <X size={14} />
-              </button>
-            </>
-          )}
-        </div>
-      ))}
-      <button
-        onClick={onTabAdd}
-        className="flex items-center justify-center w-10 h-10 min-w-[40px] hover:bg-gray-200"
-        title="新しいタブを追加"
-      >
-        <Plus size={20} />
-      </button>
+                {editingTabId === tab.id ? (
+                  <Input
+                    type="text"
+                    value={editingTitle}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingTitle(e.target.value)}
+                    onBlur={() => handleTitleSubmit(tab.id)}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                      if (e.key === 'Enter') handleTitleSubmit(tab.id);
+                      if (e.key === 'Escape') setEditingTabId(null);
+                    }}
+                    className="w-[120px] h-6 px-1"
+                    autoFocus
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="truncate">{tab.title}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        onTabRemove(tab.id);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onTabAdd}
+          className="ml-2"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

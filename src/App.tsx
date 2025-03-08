@@ -146,14 +146,12 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-semibold text-gray-900">
-              タスク管理アプリ
-            </h1>
-          </div>
+    <div className="flex flex-col h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 h-16 flex items-center">
+          <h1 className="text-xl font-semibold">
+            タスク管理アプリ
+          </h1>
         </div>
       </header>
 
