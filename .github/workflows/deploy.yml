@@ -32,17 +32,18 @@ jobs:
       
       - name: Install dependencies
         run: |
-          npm install
           npm ci
       
       - name: Build
         run: npm run build
         env:
           NODE_ENV: production
+          VITE_BASE_URL: /task-list
       
       - name: Prepare for deployment
         run: |
           touch dist/.nojekyll
+          cp dist/index.html dist/404.html
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
