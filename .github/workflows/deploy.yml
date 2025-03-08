@@ -40,6 +40,10 @@ jobs:
         env:
           NODE_ENV: production
       
+      - name: Prepare for deployment
+        run: |
+          touch dist/.nojekyll
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
