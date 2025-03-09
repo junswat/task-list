@@ -8,6 +8,7 @@ module.exports = defineConfig({
   build: {
     outDir: 'docs',
     emptyOutDir: true,
+    manifest: true,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html')
@@ -22,6 +23,11 @@ module.exports = defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
+    }
+  },
+  server: {
+    headers: {
+      'Cache-Control': 'no-store'
     }
   }
 }); 
