@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = defineConfig({
   plugins: [react()],
-  base: '/task-list/',
+  base: './',
   build: {
     outDir: 'docs',
     emptyOutDir: true,
@@ -15,8 +15,7 @@ module.exports = defineConfig({
       output: {
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]',
-        manualChunks: undefined
+        assetFileNames: 'assets/[name].[hash].[ext]'
       }
     }
   },
