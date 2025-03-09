@@ -395,13 +395,26 @@ export const SideBar: React.FC<SideBarProps> = ({
 
   // すべてのアイテムをorderで並び替えた配列を作成
   const sortedItems = React.useMemo(() => {
-    if (!Array.isArray(tabs) || !Array.isArray(separators)) {
-      return [];
-    }
-    return [...tabs, ...separators]
-      .filter(item => item !== null && item !== undefined)
+    // 両方の配列が存在することを確認
+    const validTabs = Array.isArray(tabs) ? tabs : [];
+    const validSeparators = Array.isArray(separators) ? separators : [];
+
+    // nullやundefinedを除外し、必要なプロパティを持つアイテムのみをフィルタリング
+    return [...validTabs, ...validSeparators]
+      .filter(item => (
+        item !== null &&
+        item !== undefined &&
+        typeof item === 'object' &&
+        'id' in item &&
+        typeof item.id === 'string'
+      ))
       .sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [tabs, separators]);
+
+  // items配列を安全に生成
+  const sortableItems = React.useMemo(() => {
+    return sortedItems.map(item => item.id).filter(Boolean);
+  }, [sortedItems]);
 
   return (
     <>
@@ -424,7 +437,7 @@ export const SideBar: React.FC<SideBarProps> = ({
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={sortedItems.map(item => item.id)}
+              items={sortableItems}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-0">
