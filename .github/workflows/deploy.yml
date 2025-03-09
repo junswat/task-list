@@ -42,8 +42,8 @@ jobs:
       
       - name: Prepare for deployment
         run: |
-          touch dist/.nojekyll
-          cp dist/index.html dist/404.html
+          touch docs/.nojekyll
+          cp docs/index.html docs/404.html
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -51,7 +51,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: docs
       
       - name: Deploy to GitHub Pages
         id: deployment
