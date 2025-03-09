@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = defineConfig({
   plugins: [react()],
-  base: './',
+  base: '/task-list/',
   build: {
     outDir: 'docs',
     emptyOutDir: true,
