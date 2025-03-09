@@ -1,7 +1,8 @@
-import React from 'react';
-import { GripVertical } from 'lucide-react';
-import { Tab } from '../types';
+import React, { useState } from 'react';
+import { GripVertical, Grip, X, ChevronRight } from 'lucide-react';
+import { Tab, Separator } from '../types';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DndContext,
   closestCenter,
@@ -23,22 +24,44 @@ import { cn } from "@/lib/utils";
 
 interface SideBarProps {
   tabs: Tab[];
+  separators: Separator[];
   activeTab: string | null;
   onTabSelect: (tabId: string) => void;
   onTabsReorder: (tabs: Tab[]) => void;
+  onTabTitleChange?: (tabId: string, newTitle: string) => void;
+  onSeparatorAdd: () => void;
+  onSeparatorRemove: (id: string) => void;
+  onSeparatorTitleChange: (id: string, newTitle: string) => void;
+  onSeparatorsReorder: (separators: Separator[]) => void;
 }
 
 interface SortableTabItemProps {
   tab: Tab;
   isActive: boolean;
   onClick: () => void;
+  isLastInGroup?: boolean;
+}
+
+interface SortableSeparatorItemProps {
+  separator: Separator;
+  onDoubleClick: () => void;
+  onRemove: () => void;
+  editing: boolean;
+  editingTitle: string;
+  onEditChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onEditSubmit: () => void;
+  onEditCancel: () => void;
 }
 
 const SortableTabItem: React.FC<SortableTabItemProps> = ({
   tab,
   isActive,
   onClick,
+  isLastInGroup,
 }) => {
+  const [isGrouped, setIsGrouped] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [separatorText, setSeparatorText] = useState('');
   const {
     attributes,
     listeners,
@@ -53,39 +76,195 @@ const SortableTabItem: React.FC<SortableTabItemProps> = ({
     transition,
   };
 
+  const handleSeparatorClick = () => {
+    if (isGrouped) {
+      setIsGrouped(false);
+      setEditing(false);
+      setSeparatorText('');
+    } else {
+      setIsGrouped(true);
+      setEditing(true);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          "flex items-center gap-2 p-1.5 rounded-md cursor-pointer ml-4",
+          isActive ? "bg-accent" : "hover:bg-accent/50",
+          isDragging && "opacity-50",
+          isLastInGroup && "mb-6"
+        )}
+        onClick={onClick}
+      >
+        <div
+          className="h-5 w-5 p-0 cursor-grab active:cursor-grabbing flex items-center justify-center"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-3.5 w-3.5 text-transparent" />
+        </div>
+        <span className="truncate flex-1 text-muted-foreground/70 font-medium text-sm">{tab.title}</span>
+      </div>
+      {!isLastInGroup && (
+        <div className="mt-1 mb-1">
+          <div className="flex items-center pl-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-4 w-4 p-0 opacity-0 hover:opacity-100 transition-opacity",
+                isGrouped && "opacity-100"
+              )}
+              onClick={handleSeparatorClick}
+            >
+              <ChevronRight className={cn(
+                "h-3 w-3 text-muted-foreground/50",
+                isGrouped && "text-muted-foreground/80 rotate-90"
+              )} />
+            </Button>
+            <div className="flex-1 mx-2">
+              {editing ? (
+                <Input
+                  type="text"
+                  value={separatorText}
+                  onChange={(e) => setSeparatorText(e.target.value)}
+                  placeholder="グループの説明を入力"
+                  className="h-6 px-2 text-xs bg-transparent"
+                  autoFocus
+                  onBlur={() => setEditing(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setEditing(false);
+                    }
+                    if (e.key === 'Escape') {
+                      setEditing(false);
+                      setSeparatorText('');
+                      setIsGrouped(false);
+                    }
+                  }}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "h-[1px] border-0 border-b border-dashed border-muted-foreground/30 transition-all relative",
+                    isGrouped && "border-solid border-muted-foreground/20"
+                  )}
+                >
+                  {isGrouped && separatorText && (
+                    <span className="absolute -top-3 left-0 text-sm font-medium">
+                      {separatorText}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SortableSeparatorItem: React.FC<SortableSeparatorItemProps> = ({
+  separator,
+  onDoubleClick,
+  onRemove,
+  editing,
+  editingTitle,
+  onEditChange,
+  onEditSubmit,
+  onEditCancel,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: separator.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-2 p-2 rounded-md cursor-pointer",
-        isActive ? "bg-accent" : "hover:bg-accent/50",
+        "flex items-center gap-2 py-2 text-sm font-medium border-b border-t bg-muted/30 group first:border-t-0",
         isDragging && "opacity-50"
       )}
-      onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 p-0 cursor-grab active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-4 w-4" />
-      </Button>
-      <span className="truncate flex-1">{tab.title}</span>
+      {editing ? (
+        <Input
+          type="text"
+          value={editingTitle}
+          onChange={onEditChange}
+          onBlur={onEditSubmit}
+          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter') onEditSubmit();
+            if (e.key === 'Escape') onEditCancel();
+          }}
+          className="flex-1 h-5 px-1 mx-2 text-sm"
+          autoFocus
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      ) : (
+        <>
+          <div
+            className="h-5 w-5 p-0 cursor-grab active:cursor-grabbing ml-2 flex items-center justify-center"
+            {...attributes}
+            {...listeners}
+          >
+            <Grip className="h-3.5 w-3.5" />
+          </div>
+          <span className="truncate flex-1">{separator.title}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:opacity-100 mr-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </>
+      )}
     </div>
   );
 };
 
 export const SideBar: React.FC<SideBarProps> = ({
   tabs,
+  separators,
   activeTab,
   onTabSelect,
   onTabsReorder,
+  onTabTitleChange,
+  onSeparatorAdd,
+  onSeparatorRemove,
+  onSeparatorTitleChange,
+  onSeparatorsReorder,
 }) => {
+  const [editingSeparatorId, setEditingSeparatorId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -94,37 +273,96 @@ export const SideBar: React.FC<SideBarProps> = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (over && active.id !== over.id) {
-      const oldIndex = tabs.findIndex((tab) => tab.id === active.id);
-      const newIndex = tabs.findIndex((tab) => tab.id === over.id);
-      
-      const newTabs = arrayMove(tabs, oldIndex, newIndex);
-      onTabsReorder(newTabs);
-    }
+    if (!over || active.id === over.id) return;
+
+    // アイテムの現在の配列を取得（順序でソート済み）
+    const allItems = [...tabs, ...separators].sort((a, b) => a.order - b.order);
+    
+    // 移動元と移動先のインデックスを取得
+    const oldIndex = allItems.findIndex(item => item.id === active.id);
+    const newIndex = allItems.findIndex(item => item.id === over.id);
+    
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // 新しい配列を作成
+    const newItems = arrayMove(allItems, oldIndex, newIndex);
+
+    // 順序を1から連番で振り直す
+    const updatedItems = newItems.map((item, index) => ({
+      ...item,
+      order: index + 1
+    }));
+
+    // タブとセパレーターを分離して更新
+    const updatedTabs = updatedItems.filter(item => !('type' in item)) as Tab[];
+    const updatedSeparators = updatedItems.filter(item => 'type' in item) as Separator[];
+
+    onTabsReorder(updatedTabs);
+    onSeparatorsReorder(updatedSeparators);
   };
+
+  const handleSeparatorDoubleClick = (separator: Separator) => {
+    setEditingSeparatorId(separator.id);
+    setEditingTitle(separator.title);
+  };
+
+  const handleSeparatorTitleSubmit = (id: string) => {
+    if (editingTitle.trim()) {
+      onSeparatorTitleChange(id, editingTitle.trim());
+    }
+    setEditingSeparatorId(null);
+  };
+
+  // すべてのアイテムをorderで並び替えた配列を作成
+  const sortedItems = [...tabs, ...separators].sort((a, b) => a.order - b.order);
 
   return (
     <div className="w-64 h-[calc(100vh-4rem)] border-r bg-card">
       <div className="p-4">
-        <h2 className="text-lg font-semibold mb-4">リスト一覧</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">リスト一覧</h2>
+        </div>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={tabs.map(tab => tab.id)}
+            items={sortedItems.map(item => item.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-1">
-              {tabs.map((tab) => (
-                <SortableTabItem
-                  key={tab.id}
-                  tab={tab}
-                  isActive={tab.id === activeTab}
-                  onClick={() => onTabSelect(tab.id)}
-                />
-              ))}
+            <div className="space-y-0">
+              {sortedItems.map((item, index) => {
+                if ('type' in item && item.type === 'separator') {
+                  const separator = item as Separator;
+                  return (
+                    <SortableSeparatorItem
+                      key={separator.id}
+                      separator={separator}
+                      onDoubleClick={() => handleSeparatorDoubleClick(separator)}
+                      onRemove={() => onSeparatorRemove(separator.id)}
+                      editing={editingSeparatorId === separator.id}
+                      editingTitle={editingTitle}
+                      onEditChange={(e) => setEditingTitle(e.target.value)}
+                      onEditSubmit={() => handleSeparatorTitleSubmit(separator.id)}
+                      onEditCancel={() => setEditingSeparatorId(null)}
+                    />
+                  );
+                } else {
+                  const tab = item as Tab;
+                  const nextItem = sortedItems[index + 1];
+                  const isLastInGroup = !nextItem || ('type' in nextItem && nextItem.type === 'separator');
+                  return (
+                    <SortableTabItem
+                      key={tab.id}
+                      tab={tab}
+                      isActive={tab.id === activeTab}
+                      onClick={() => onTabSelect(tab.id)}
+                      isLastInGroup={isLastInGroup}
+                    />
+                  );
+                }
+              })}
             </div>
           </SortableContext>
         </DndContext>
