@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GripVertical, Grip, X, ChevronRight, Plus } from 'lucide-react';
 import { Tab, Separator } from '../types';
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ interface SideBarProps {
   onSeparatorsReorder: (separators: Separator[]) => void;
   onTabAdd: () => void;
   onTabRemove: (tabId: string) => void;
+  onUpdateTabGroup: (tabId: string, isGrouped: boolean, groupText: string) => void;
 }
 
 interface SortableTabItemProps {
@@ -59,6 +60,7 @@ interface SortableTabItemProps {
   onEditChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEditSubmit: () => void;
   onEditCancel: () => void;
+  onUpdateSeparator: (isGrouped: boolean, groupText: string) => void;
 }
 
 interface SortableSeparatorItemProps {
@@ -84,6 +86,7 @@ const SortableTabItem: React.FC<SortableTabItemProps> = ({
   onEditChange,
   onEditSubmit,
   onEditCancel,
+  onUpdateSeparator,
 }) => {
   const [isGrouped, setIsGrouped] = useState(false);
   const [groupEditing, setGroupEditing] = useState(false);
@@ -107,11 +110,25 @@ const SortableTabItem: React.FC<SortableTabItemProps> = ({
       setIsGrouped(false);
       setGroupEditing(false);
       setSeparatorText('');
+      onUpdateSeparator(false, '');
     } else {
       setIsGrouped(true);
       setGroupEditing(true);
     }
   };
+
+  const handleGroupTextSubmit = () => {
+    setGroupEditing(false);
+    onUpdateSeparator(true, separatorText);
+  };
+
+  // 初期状態の設定
+  useEffect(() => {
+    if (tab.isGrouped) {
+      setIsGrouped(true);
+      setSeparatorText(tab.groupText || '');
+    }
+  }, [tab.isGrouped, tab.groupText]);
 
   return (
     <div className="relative">
@@ -186,15 +203,16 @@ const SortableTabItem: React.FC<SortableTabItemProps> = ({
                   placeholder="グループの説明を入力"
                   className="h-6 px-2 text-xs bg-transparent"
                   autoFocus
-                  onBlur={() => setGroupEditing(false)}
+                  onBlur={handleGroupTextSubmit}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      setGroupEditing(false);
+                      handleGroupTextSubmit();
                     }
                     if (e.key === 'Escape') {
                       setGroupEditing(false);
                       setSeparatorText('');
                       setIsGrouped(false);
+                      onUpdateSeparator(false, '');
                     }
                   }}
                 />
@@ -308,6 +326,7 @@ export const SideBar: React.FC<SideBarProps> = ({
   onSeparatorsReorder,
   onTabAdd,
   onTabRemove,
+  onUpdateTabGroup,
 }) => {
   const [editingSeparatorId, setEditingSeparatorId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
@@ -478,6 +497,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                           onEditChange={(e) => setEditingTabTitle(e.target.value)}
                           onEditSubmit={() => handleTabTitleSubmit(tab.id)}
                           onEditCancel={() => setEditingTabId(null)}
+                          onUpdateSeparator={(isGrouped, groupText) => onUpdateTabGroup(tab.id, isGrouped, groupText)}
                         />
                       );
                     }

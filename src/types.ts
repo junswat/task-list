@@ -5,6 +5,8 @@ export interface Tab {
   updatedAt: string;
   order: number;
   isActive: boolean;
+  isGrouped?: boolean;
+  groupText?: string;
 }
 
 export interface Separator {
@@ -12,6 +14,8 @@ export interface Separator {
   title: string;
   order: number;
   type: 'separator';
+  isGrouped?: boolean;
+  groupText?: string;
 }
 
 export interface Task {

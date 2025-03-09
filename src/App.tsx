@@ -214,6 +214,17 @@ function App() {
     }));
   };
 
+  const handleUpdateTabGroup = (tabId: string, isGrouped: boolean, groupText: string) => {
+    setState((prev) => ({
+      ...prev,
+      tabs: prev.tabs.map((tab) =>
+        tab.id === tabId
+          ? { ...tab, isGrouped, groupText, updatedAt: new Date().toISOString() }
+          : tab
+      ),
+    }));
+  };
+
   const handleTasksReorder = (newTasks: Task[]) => {
     if (!state.activeTab) return;
 
@@ -313,6 +324,7 @@ function App() {
           onSeparatorRemove={handleSeparatorRemove}
           onSeparatorTitleChange={handleSeparatorTitleChange}
           onSeparatorsReorder={handleSeparatorsReorder}
+          onUpdateTabGroup={handleUpdateTabGroup}
         />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <div className="pt-2">
