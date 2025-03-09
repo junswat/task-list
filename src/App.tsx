@@ -3,10 +3,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { TabBar } from './components/TabBar';
 import { TaskList } from './components/TaskList';
 import { SideBar } from './components/SideBar';
+import { HeaderMenu } from './components/HeaderMenu';
 import { AppState, Tab, Task } from './types';
 import { loadState, saveState } from './store/localStorage';
 import { ThemeProvider } from './components/theme-provider';
-import { ThemeToggle } from './components/theme-toggle';
 
 function App() {
   const [state, setState] = useState<AppState>(() => {
@@ -194,12 +194,41 @@ function App() {
     }));
   };
 
+  const handleExport = () => {
+    const dataStr = JSON.stringify(state, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `checklist-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (data: AppState) => {
+    try {
+      // バリデーション
+      if (!data.tabs || !data.tasks || !data.activeTab) {
+        throw new Error('Invalid data format');
+      }
+
+      setState(data);
+      alert('データのインポートが完了しました。');
+    } catch (error) {
+      alert('インポートに失敗しました。データの形式が正しくありません。');
+    }
+  };
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
-        <div className="fixed top-0 right-4 z-50 mt-2">
-          <ThemeToggle />
-        </div>
+        <HeaderMenu
+          onExport={handleExport}
+          onImport={handleImport}
+        />
         <div className="flex h-screen pt-4">
           <SideBar
             tabs={state.tabs}
