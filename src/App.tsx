@@ -299,36 +299,33 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-background">
-        <HeaderMenu
-          onExport={handleExport}
-          onImport={handleImport}
+      <div className="flex h-screen overflow-hidden">
+        <SideBar
+          tabs={state.tabs}
+          separators={state.separators}
+          activeTab={state.activeTab}
+          onTabAdd={handleTabAdd}
+          onTabRemove={handleTabRemove}
+          onTabSelect={(id) => setState((prev) => ({ ...prev, activeTab: id }))}
+          onTabTitleChange={handleTabTitleChange}
+          onTabsReorder={handleTabsReorder}
+          onSeparatorAdd={handleSeparatorAdd}
+          onSeparatorRemove={handleSeparatorRemove}
+          onSeparatorTitleChange={handleSeparatorTitleChange}
+          onSeparatorsReorder={handleSeparatorsReorder}
         />
-        <div className="flex h-screen pt-4">
-          <SideBar
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+          <HeaderMenu onImport={handleImport} onExport={handleExport} />
+          <TabBar
             tabs={state.tabs}
-            separators={state.separators}
             activeTab={state.activeTab}
-            onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
-            onTabsReorder={handleTabsReorder}
-            onTabTitleChange={handleTabTitleChange}
-            onSeparatorAdd={handleSeparatorAdd}
-            onSeparatorRemove={handleSeparatorRemove}
-            onSeparatorTitleChange={handleSeparatorTitleChange}
-            onSeparatorsReorder={handleSeparatorsReorder}
+            onTabSelect={(id) => setState((prev) => ({ ...prev, activeTab: id }))}
             onTabAdd={handleTabAdd}
             onTabRemove={handleTabRemove}
+            onTabTitleChange={handleTabTitleChange}
+            onTabsReorder={handleTabsReorder}
           />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <TabBar
-              tabs={state.tabs}
-              activeTab={state.activeTab}
-              onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
-              onTabAdd={handleTabAdd}
-              onTabRemove={handleTabRemove}
-              onTabTitleChange={handleTabTitleChange}
-              onTabsReorder={handleTabsReorder}
-            />
+          <div className="flex-1 overflow-y-auto p-6">
             {state.activeTab && (
               <TaskList
                 tasks={state.tasks[state.activeTab]}
@@ -336,8 +333,8 @@ function App() {
                 onTaskToggle={handleTaskToggle}
                 onTaskRemove={handleTaskRemove}
                 onTaskEdit={handleTaskEdit}
-                onUncompleteAll={handleUncompleteAll}
                 onTasksReorder={handleTasksReorder}
+                onUncompleteAll={handleUncompleteAll}
               />
             )}
           </div>

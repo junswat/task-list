@@ -418,9 +418,9 @@ export const SideBar: React.FC<SideBarProps> = ({
 
   return (
     <>
-      <div className="w-64 h-[calc(100vh-4rem)] border-r bg-card">
-        <div className="p-4">
-          <div className="flex justify-between items-center mb-4">
+      <div className="w-64 h-screen border-r bg-card">
+        <div className="flex flex-col h-full">
+          <div className="flex justify-between items-center p-4">
             <h2 className="text-lg font-semibold">チェック項目</h2>
             <Button
               variant="ghost"
@@ -431,58 +431,61 @@ export const SideBar: React.FC<SideBarProps> = ({
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={sortableItems}
-              strategy={verticalListSortingStrategy}
+          <div className="flex-1 overflow-y-auto">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <div className="space-y-0">
-                {sortedItems.map((item, index) => {
-                  if (!item || !item.id) return null;
-                  if ('type' in item && item.type === 'separator') {
-                    const separator = item as Separator;
-                    return (
-                      <SortableSeparatorItem
-                        key={separator.id}
-                        separator={separator}
-                        onDoubleClick={() => handleSeparatorDoubleClick(separator)}
-                        onRemove={() => onSeparatorRemove(separator.id)}
-                        editing={editingSeparatorId === separator.id}
-                        editingTitle={editingTitle}
-                        onEditChange={(e) => setEditingTitle(e.target.value)}
-                        onEditSubmit={() => handleSeparatorTitleSubmit(separator.id)}
-                        onEditCancel={() => setEditingSeparatorId(null)}
-                      />
-                    );
-                  } else {
-                    const tab = item as Tab;
-                    const nextItem = sortedItems[index + 1];
-                    const isLastInGroup = !nextItem || ('type' in nextItem && nextItem.type === 'separator');
-                    return (
-                      <SortableTabItem
-                        key={tab.id}
-                        tab={tab}
-                        isActive={tab.id === activeTab}
-                        onClick={() => onTabSelect(tab.id)}
-                        isLastInGroup={isLastInGroup}
-                        onDelete={(e) => handleDeleteClick(tab.id, e)}
-                        onDoubleClick={() => handleTabDoubleClick(tab)}
-                        isEditing={editingTabId === tab.id}
-                        editingTitle={editingTabTitle}
-                        onEditChange={(e) => setEditingTabTitle(e.target.value)}
-                        onEditSubmit={() => handleTabTitleSubmit(tab.id)}
-                        onEditCancel={() => setEditingTabId(null)}
-                      />
-                    );
-                  }
-                })}
-              </div>
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={sortableItems}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="px-4">
+                  {sortedItems.map((item, index) => {
+                    if (!item || !item.id) return null;
+                    
+                    if ('type' in item && item.type === 'separator') {
+                      const separator = item as Separator;
+                      return (
+                        <SortableSeparatorItem
+                          key={separator.id}
+                          separator={separator}
+                          onDoubleClick={() => handleSeparatorDoubleClick(separator)}
+                          onRemove={() => onSeparatorRemove(separator.id)}
+                          editing={editingSeparatorId === separator.id}
+                          editingTitle={editingTitle}
+                          onEditChange={(e) => setEditingTitle(e.target.value)}
+                          onEditSubmit={() => handleSeparatorTitleSubmit(separator.id)}
+                          onEditCancel={() => setEditingSeparatorId(null)}
+                        />
+                      );
+                    } else {
+                      const tab = item as Tab;
+                      const nextItem = sortedItems[index + 1];
+                      const isLastInGroup = !nextItem || ('type' in nextItem && nextItem.type === 'separator');
+                      return (
+                        <SortableTabItem
+                          key={tab.id}
+                          tab={tab}
+                          isActive={tab.id === activeTab}
+                          onClick={() => onTabSelect(tab.id)}
+                          isLastInGroup={isLastInGroup}
+                          onDelete={(e) => handleDeleteClick(tab.id, e)}
+                          onDoubleClick={() => handleTabDoubleClick(tab)}
+                          isEditing={editingTabId === tab.id}
+                          editingTitle={editingTabTitle}
+                          onEditChange={(e) => setEditingTabTitle(e.target.value)}
+                          onEditSubmit={() => handleTabTitleSubmit(tab.id)}
+                          onEditCancel={() => setEditingTabId(null)}
+                        />
+                      );
+                    }
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </div>
         </div>
       </div>
 
