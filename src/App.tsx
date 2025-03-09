@@ -315,16 +315,20 @@ function App() {
           onSeparatorsReorder={handleSeparatorsReorder}
         />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
-          <HeaderMenu onImport={handleImport} onExport={handleExport} />
-          <TabBar
-            tabs={state.tabs}
-            activeTab={state.activeTab}
-            onTabSelect={(id) => setState((prev) => ({ ...prev, activeTab: id }))}
-            onTabAdd={handleTabAdd}
-            onTabRemove={handleTabRemove}
-            onTabTitleChange={handleTabTitleChange}
-            onTabsReorder={handleTabsReorder}
-          />
+          <div className="pt-2">
+            <HeaderMenu onImport={handleImport} onExport={handleExport} />
+          </div>
+          <div className="pt-2">
+            <TabBar
+              tabs={state.tabs}
+              activeTab={state.activeTab}
+              onTabSelect={(id) => setState((prev) => ({ ...prev, activeTab: id }))}
+              onTabAdd={handleTabAdd}
+              onTabRemove={handleTabRemove}
+              onTabTitleChange={handleTabTitleChange}
+              onTabsReorder={handleTabsReorder}
+            />
+          </div>
           <div className="flex-1 overflow-y-auto p-6">
             {state.activeTab && (
               <TaskList
