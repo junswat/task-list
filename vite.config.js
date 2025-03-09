@@ -6,7 +6,7 @@ module.exports = defineConfig({
   plugins: [react()],
   base: '/task-list/',
   build: {
-    outDir: 'dist',
+    outDir: 'docs',
     emptyOutDir: true,
     rollupOptions: {
       input: {

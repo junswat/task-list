@@ -91,7 +91,7 @@ const SortableTab: React.FC<SortableTabProps> = ({
       onClick={onSelect}
       onDoubleClick={onDoubleClick}
       className={cn(
-        "relative data-[state=active]:bg-background px-4 py-2 h-10",
+        "relative data-[state=active]:bg-background px-4 h-[42px]",
         isDragging && "opacity-50"
       )}
     >
@@ -111,24 +111,20 @@ const SortableTab: React.FC<SortableTabProps> = ({
         />
       ) : (
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-0 cursor-grab active:cursor-grabbing"
+          <div
+            className="h-6 w-6 p-0 cursor-grab active:cursor-grabbing flex items-center justify-center"
             {...attributes}
             {...listeners}
           >
             <GripHorizontal className="h-4 w-4" />
-          </Button>
+          </div>
           <span className="truncate">{tab.title}</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
+          <div
+            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:opacity-100 flex items-center justify-center cursor-pointer"
             onClick={onDelete}
           >
             <X className="h-4 w-4" />
-          </Button>
+          </div>
         </div>
       )}
     </TabsTrigger>
@@ -164,7 +160,6 @@ export const TabBar: React.FC<TabBarProps> = ({
     if (over && active.id !== over.id) {
       const oldIndex = tabs.findIndex((tab) => tab.id === active.id);
       const newIndex = tabs.findIndex((tab) => tab.id === over.id);
-      
       const newTabs = arrayMove(tabs, oldIndex, newIndex);
       onTabsReorder(newTabs);
     }
@@ -229,7 +224,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "absolute left-0 z-10 h-10 w-8 bg-gradient-to-r from-background to-transparent",
+                  "absolute left-0 z-10 h-[42px] w-8 bg-gradient-to-r from-background to-transparent",
                   !showLeftScroll && "hidden"
                 )}
                 onClick={() => handleScroll('left')}
@@ -242,7 +237,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 className="overflow-x-auto scrollbar-hide"
                 onScroll={checkScroll}
               >
-                <TabsList className="inline-flex border-b-0">
+                <TabsList className="inline-flex h-[42px] border-b-0">
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -269,11 +264,12 @@ export const TabBar: React.FC<TabBarProps> = ({
                       ))}
                     </SortableContext>
                   </DndContext>
+
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-[42px] w-10 shrink-0"
                     onClick={onTabAdd}
-                    className="h-10 px-2 rounded-none hover:bg-muted"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -284,7 +280,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "absolute right-0 z-10 h-10 w-8 bg-gradient-to-l from-background to-transparent",
+                  "absolute right-0 z-10 h-[42px] w-8 bg-gradient-to-l from-background to-transparent",
                   !showRightScroll && "hidden"
                 )}
                 onClick={() => handleScroll('right')}
@@ -296,13 +292,12 @@ export const TabBar: React.FC<TabBarProps> = ({
         </div>
       </div>
 
-      <AlertDialog open={tabToDelete !== null} onOpenChange={() => setTabToDelete(null)}>
+      <AlertDialog open={!!tabToDelete} onOpenChange={() => setTabToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>リストの削除</AlertDialogTitle>
+            <AlertDialogTitle>タブを削除しますか？</AlertDialogTitle>
             <AlertDialogDescription>
-              このリストを削除してもよろしいですか？
-              この操作は取り消せません。
+              このタブに含まれるすべてのタスクが削除されます。この操作は取り消せません。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

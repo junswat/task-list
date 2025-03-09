@@ -4,7 +4,7 @@ import { TabBar } from './components/TabBar';
 import { TaskList } from './components/TaskList';
 import { SideBar } from './components/SideBar';
 import { HeaderMenu } from './components/HeaderMenu';
-import { AppState, Tab, Task } from './types';
+import { AppState, Tab, Task, Separator } from './types';
 import { loadState, saveState } from './store/localStorage';
 import { ThemeProvider } from './components/theme-provider';
 
@@ -25,6 +25,7 @@ function App() {
 
     return {
       tabs: [defaultTab],
+      separators: [],
       activeTab: defaultTab.id,
       tasks: { [defaultTab.id]: [] },
     };
@@ -222,6 +223,46 @@ function App() {
     }
   };
 
+  const handleSeparatorAdd = () => {
+    const newSeparator: Separator = {
+      id: uuidv4(),
+      title: '新しいグループ',
+      order: state.separators.length,
+      type: 'separator',
+    };
+
+    setState((prev) => ({
+      ...prev,
+      separators: [...prev.separators, newSeparator],
+    }));
+  };
+
+  const handleSeparatorRemove = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      separators: prev.separators.filter((sep) => sep.id !== id),
+    }));
+  };
+
+  const handleSeparatorTitleChange = (id: string, newTitle: string) => {
+    setState((prev) => ({
+      ...prev,
+      separators: prev.separators.map((sep) =>
+        sep.id === id ? { ...sep, title: newTitle } : sep
+      ),
+    }));
+  };
+
+  const handleSeparatorsReorder = (newSeparators: Separator[]) => {
+    setState((prev) => ({
+      ...prev,
+      separators: newSeparators.map((sep, index) => ({
+        ...sep,
+        order: index,
+      })),
+    }));
+  };
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
@@ -232,9 +273,17 @@ function App() {
         <div className="flex h-screen pt-4">
           <SideBar
             tabs={state.tabs}
+            separators={state.separators}
             activeTab={state.activeTab}
             onTabSelect={(tabId) => setState((prev) => ({ ...prev, activeTab: tabId }))}
             onTabsReorder={handleTabsReorder}
+            onTabTitleChange={handleTabTitleChange}
+            onSeparatorAdd={handleSeparatorAdd}
+            onSeparatorRemove={handleSeparatorRemove}
+            onSeparatorTitleChange={handleSeparatorTitleChange}
+            onSeparatorsReorder={handleSeparatorsReorder}
+            onTabAdd={handleTabAdd}
+            onTabRemove={handleTabRemove}
           />
           <div className="flex-1 flex flex-col overflow-hidden">
             <TabBar

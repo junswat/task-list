@@ -151,16 +151,12 @@ export const TaskList: React.FC<TaskListProps> = ({
 
   const handleTaskSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newTaskText.trim()) {
-      onTaskAdd(newTaskText.trim());
-      setNewTaskText('');
-    }
+    onTaskAdd(newTaskText);
+    setNewTaskText('');
   };
 
   const handleEditSubmit = (taskId: string) => {
-    if (editingText.trim()) {
-      onTaskEdit(taskId, editingText.trim());
-    }
+    onTaskEdit(taskId, editingText);
     setEditingTaskId(null);
   };
 

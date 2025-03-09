@@ -7,6 +7,13 @@ export interface Tab {
   isActive: boolean;
 }
 
+export interface Separator {
+  id: string;
+  title: string;
+  order: number;
+  type: 'separator';
+}
+
 export interface Task {
   id: string;
   text: string;
@@ -18,6 +25,7 @@ export interface Task {
 
 export interface AppState {
   tabs: Tab[];
+  separators: Separator[];
   activeTab: string | null;
   tasks: {
     [tabId: string]: Task[];
