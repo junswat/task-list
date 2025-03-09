@@ -394,7 +394,14 @@ export const SideBar: React.FC<SideBarProps> = ({
   };
 
   // すべてのアイテムをorderで並び替えた配列を作成
-  const sortedItems = [...tabs, ...separators].sort((a, b) => a.order - b.order);
+  const sortedItems = React.useMemo(() => {
+    if (!Array.isArray(tabs) || !Array.isArray(separators)) {
+      return [];
+    }
+    return [...tabs, ...separators]
+      .filter(item => item !== null && item !== undefined)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  }, [tabs, separators]);
 
   return (
     <>
@@ -422,6 +429,7 @@ export const SideBar: React.FC<SideBarProps> = ({
             >
               <div className="space-y-0">
                 {sortedItems.map((item, index) => {
+                  if (!item || !item.id) return null;
                   if ('type' in item && item.type === 'separator') {
                     const separator = item as Separator;
                     return (

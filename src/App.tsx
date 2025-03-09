@@ -10,8 +10,18 @@ import { ThemeProvider } from './components/theme-provider';
 
 function App() {
   const [state, setState] = useState<AppState>(() => {
-    const savedState = loadState();
-    if (savedState) return savedState;
+    try {
+      const savedState = loadState();
+      if (savedState && 
+          Array.isArray(savedState.tabs) && 
+          Array.isArray(savedState.separators) && 
+          savedState.tasks && 
+          typeof savedState.tasks === 'object') {
+        return savedState;
+      }
+    } catch (error) {
+      console.error('Error loading initial state:', error);
+    }
 
     // Initialize with a default tab
     const defaultTab: Tab = {
@@ -23,6 +33,7 @@ function App() {
       isActive: true,
     };
 
+    // Return safe default state
     return {
       tabs: [defaultTab],
       separators: [],
@@ -31,8 +42,31 @@ function App() {
     };
   });
 
+  // Ensure state integrity on every render
   useEffect(() => {
-    saveState(state);
+    if (!state.tabs || !Array.isArray(state.tabs) || state.tabs.length === 0) {
+      const defaultTab: Tab = {
+        id: uuidv4(),
+        title: '新しいリスト',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        order: 0,
+        isActive: true,
+      };
+      
+      setState({
+        tabs: [defaultTab],
+        separators: [],
+        activeTab: defaultTab.id,
+        tasks: { [defaultTab.id]: [] },
+      });
+    }
+  }, [state.tabs]);
+
+  useEffect(() => {
+    if (state.tabs && Array.isArray(state.tabs) && state.tabs.length > 0) {
+      saveState(state);
+    }
   }, [state]);
 
   const handleTabAdd = () => {
