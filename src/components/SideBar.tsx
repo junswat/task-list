@@ -421,7 +421,7 @@ export const SideBar: React.FC<SideBarProps> = ({
       <div className="w-64 h-[calc(100vh-4rem)] border-r bg-card">
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">リスト一覧</h2>
+            <h2 className="text-lg font-semibold">チェック項目</h2>
             <Button
               variant="ghost"
               size="icon"
