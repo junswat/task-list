@@ -206,7 +206,7 @@ const SortableTabItem: React.FC<SortableTabItemProps> = ({
                   )}
                 >
                   {isGrouped && separatorText && (
-                    <span className="absolute -top-2 left-0 text-sm font-medium px-1 bg-card">
+                    <span className="absolute -top-2 left-0 text-sm font-medium px-1 bg-background">
                       {separatorText}
                     </span>
                   )}
